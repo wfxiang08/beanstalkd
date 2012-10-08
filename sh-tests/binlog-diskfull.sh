@@ -39,7 +39,7 @@ fi
 start_beanstalkd $logdir "-s $size" "fiu-run -x"
 
 # Make beanstalkd think the disk is full now.
-fiu-ctrl -e posix/io/oc/open -i $ENOSPC $bpid
+fiu-ctrl -c 'enable name=posix/io/oc/open' -i $ENOSPC $bpid
 
 # Insert enough jobs to create another binlog file
 $nc $server $port <<EOF > "$out1"
@@ -70,7 +70,7 @@ res=$?
 test "$res" -eq 0 || exit $res
 
 # Now make beanstalkd think the disk once again has space.
-fiu-ctrl -d posix/io/oc/open $bpid
+fiu-ctrl -c 'disable name=posix/io/oc/open' $bpid
 
 # Insert enough jobs to create another binlog file
 $nc $server $port <<EOF > "$out1"
