@@ -709,7 +709,7 @@ check_err(Conn *c, const char *s)
     if (errno == EINTR) return;
     if (errno == EWOULDBLOCK) return;
 
-    twarn("%s", s);
+    //twarn("%s", s);
     connclose(c);
     return;
 }
