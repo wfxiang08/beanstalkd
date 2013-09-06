@@ -1,0 +1,63 @@
+为 Beanstalkd 增加 multi-subscriber 支持。
+
+bind 命令：
+
+bind src_tube dst_tube\r\n
+
+把 dst_tube 绑定到 src_tube 上，有两个效果：
+1) 把当时 src_tube 上的所有 job 全部转移到 dst_tube 上
+2) 之后 producer 在 src_tube 上生产的消息全部透明的转发到 dst_tube，同时
+   src_tube 上不再保留任何的 job，仅起到'转发'的作用。
+
+把同一个 src_tube bind 到不同的 dst_tube，作用就是构建一个生产者多个消费
+者消息队列模型。
+
+返回值：
+
+  - "BAD_FORMAT\r\n" 
+
+  - "OUT_OF_MEMORY\r\n"
+
+  - "BINDED\r\n" 表示成功
+
+unbind 命令：
+
+unbind src_tube dst_tube\r\n
+
+取消 dst_tube 对 src_tube 的消息订阅。
+
+返回值：
+
+  - "BAD_FORMAT\r\n" 
+
+  - "NOT_FOUND\r\n"
+
+  - "UNBINDED\r\n" 表示成功
+
+
+使用场景举例：
+ 
+                                .----> dst-tube1 -----> consumer1
+                               |
+  publisher ----> src-tube ----|
+                               |
+                                `----> dst-tube2 -----> consumer2
+
+
+publisher:
+use src-tube
+put job
+put job
+...
+
+consumer1:
+bind src-tube dst-tube1
+watch dst-tube1
+进入消息消费过程
+
+comsumer2:
+bind src-tube dst-tube2
+watch dst-tube2
+进入消息消费过程
+
+原作者：@davies https://github.com/davies
