@@ -2,3 +2,5 @@
 /vers.c
 /beanstalkd
 /News
+.idea
+CMakeLists.txt

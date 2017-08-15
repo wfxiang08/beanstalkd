@@ -27,6 +27,10 @@ su(const char *user)
     if (r == -1) twarn("setuid(%d \"%s\")", pwent->pw_uid, user), exit(34);
 }
 
+void enter_disable_binlog(int sig) {
+    srv.wal.use = 0; // 直接动态取消wal: binlog
+    twarn("disable binlog");
+}
 
 static void
 set_sig_handlers()
@@ -42,9 +46,15 @@ set_sig_handlers()
     r = sigaction(SIGPIPE, &sa, 0);
     if (r == -1) twarn("sigaction(SIGPIPE)"), exit(111);
 
+    // 进入drain mode
     sa.sa_handler = enter_drain_mode;
     r = sigaction(SIGUSR1, &sa, 0);
     if (r == -1) twarn("sigaction(SIGUSR1)"), exit(111);
+
+    // 动态取消binlog
+    sa.sa_handler = enter_disable_binlog;
+    r = sigaction(SIGUSR2, &sa, 0);
+    if (r == -1) twarn("sigaction(SIGUSR2)"), exit(111);
 }
 
 int
