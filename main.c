@@ -51,7 +51,7 @@ set_sig_handlers()
     r = sigaction(SIGUSR1, &sa, 0);
     if (r == -1) twarn("sigaction(SIGUSR1)"), exit(111);
 
-    // 动态取消binlog
+    // 动态取消 binlog
     sa.sa_handler = enter_disable_binlog;
     r = sigaction(SIGUSR2, &sa, 0);
     if (r == -1) twarn("sigaction(SIGUSR2)"), exit(111);
@@ -80,6 +80,7 @@ main(int argc, char **argv)
     if (srv.user) su(srv.user);
     set_sig_handlers();
 
+    // 如果启动binlog
     if (srv.wal.use) {
         // We want to make sure that only one beanstalkd tries
         // to use the wal directory at a time. So acquire a lock
