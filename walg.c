@@ -14,11 +14,14 @@
 static int reserve(Wal *w, int n);
 
 
+// wal
 // Reads w->dir for files matching binlog.NNN,
 // sets w->next to the next unused number, and
 // returns the minimum number.
 // If no files are found, sets w->next to 1 and
 // returns a large number.
+// 扫描binlog
+//
 static int
 walscandir(Wal *w)
 {
@@ -50,6 +53,7 @@ walscandir(Wal *w)
 }
 
 
+// wal gc(清理Wal中的log)
 void
 walgc(Wal *w)
 {
@@ -70,6 +74,7 @@ walgc(Wal *w)
 }
 
 
+// 将wal的cur 切换到 next
 // returns 1 on success, 0 on error.
 static int
 usenext(Wal *w)
@@ -156,6 +161,7 @@ walcompact(Wal *w)
 }
 
 
+// fsync wal当前的文件
 static void
 walsync(Wal *w)
 {
@@ -179,8 +185,9 @@ int
 walwrite(Wal *w, job j)
 {
     int r = 0;
-
+    // 如果启动binlog
     if (!w->use) return 1;
+
     if (w->cur->resv > 0 || usenext(w)) {
         if (j->file) {
             r = filewrjobshort(w->cur, j);
@@ -200,6 +207,7 @@ walwrite(Wal *w, job j)
 void
 walmaint(Wal *w)
 {
+    // 如果启动binlog, 则compact/sync
     if (w->use) {
         if (!w->nocomp) {
             walcompact(w);
@@ -336,6 +344,7 @@ reserve(Wal *w, int n)
     int r;
 
     // return value must be nonzero but is otherwise ignored
+    // 如果不启动binlog, 则直接返回成功
     if (!w->use) return 1;
 
     if (w->cur->free >= n) {

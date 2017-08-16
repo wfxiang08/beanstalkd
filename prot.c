@@ -883,6 +883,9 @@ migrate_jobs(Conn *c, tube s, tube t)
         if(!remove_ready_job(j)) remove_delayed_job(j); 
 
         j->r.state = Invalid;
+
+        // 写job, flush磁盘
+        // 直接disable
         walwrite(&c->srv->wal, j);
         walmaint(&c->srv->wal);
         job_free(j);
