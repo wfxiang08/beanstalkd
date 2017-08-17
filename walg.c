@@ -21,6 +21,7 @@ static int reserve(Wal *w, int n);
 // If no files are found, sets w->next to 1 and
 // returns a large number.
 // 扫描binlog
+// Write Ahead log
 //
 static int
 walscandir(Wal *w)
@@ -92,14 +93,18 @@ usenext(Wal *w)
     return 1;
 }
 
-
+// 剩余空间 / 使用大小
 static int
 ratio(Wal *w)
 {
     int64 n, d;
 
+    // d 表示已经使用的大小
     d = w->alive + w->resv;
+
+    // n表示剩余空间
     n = (int64)w->nfile * (int64)w->filesize - d;
+
     if (!d) return 0;
     return n / d;
 }
@@ -144,6 +149,7 @@ moveone(Wal *w)
         return;
     }
 
+    // 将头部的job删除，并且写入当前的文件中
     filermjob(w->head, j);
     w->nmig++;
     walwrite(w, j);
@@ -155,6 +161,8 @@ walcompact(Wal *w)
 {
     int r;
 
+    // 剩余空间 / 使用大小
+    // 将部分的job迁移到cur中
     for (r=ratio(w); r>=2; r--) {
         moveone(w);
     }
@@ -168,7 +176,10 @@ walsync(Wal *w)
     int64 now;
 
     now = nanoseconds();
+
     if (w->wantsync && now >= w->lastsync+w->syncrate) {
+
+        // 定期同步数据
         w->lastsync = now;
         if (fsync(w->cur->fd) == -1) {
             twarn("fsync");
@@ -195,6 +206,8 @@ walwrite(Wal *w, job j)
             r = filewrjobfull(w->cur, j);
         }
     }
+
+    // 如果写失败，则close
     if (!r) {
         filewclose(w->cur);
         w->use = 0;

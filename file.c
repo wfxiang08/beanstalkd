@@ -90,11 +90,16 @@ filermjob(File *f, job j)
 {
     if (!f) return;
     if (f != j->file) return;
+
+    // 从文件中删除job
+    // 1. 从队列中删除job
     j->fnext->fprev = j->fprev;
     j->fprev->fnext = j->fnext;
     j->fnext = 0;
     j->fprev = 0;
+    // 2. 删除文件引用
     j->file = NULL;
+    // 3. 调整alive大小
     f->w->alive -= j->walused;
     j->walused = 0;
     filedecref(f);

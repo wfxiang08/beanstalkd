@@ -1,0 +1,12 @@
+[Unit]
+Description=Beanstalkd Fast Workqueue Service
+After=network.target
+
+[Service]
+User=beanstalkd
+Type=simple
+ExecStart=/usr/bin/beanstalkd -l 0.0.0.0 -p 11300 -u beanstalkd
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

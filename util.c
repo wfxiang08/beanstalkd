@@ -174,6 +174,7 @@ optparse(Server *s, char **argv)
                     s->wal.nocomp = 1;
                     break;
                 case 'f':
+                    // 同步时间间隔
                     ms = (int64)parse_size_t(EARGF(flagusage("-f")));
                     s->wal.syncrate = ms * 1000000;
                     s->wal.wantsync = 1;
